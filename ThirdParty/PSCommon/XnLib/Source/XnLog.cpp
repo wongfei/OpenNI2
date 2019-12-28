@@ -193,6 +193,9 @@ static void xnLogCreateEntry(XnBufferedLogEntry* pEntry, const XnChar* csLogMask
 
 static void xnLogWriteEntry(XnLogEntry* pEntry)
 {
+#if defined(XN_ENABLE_LOG_WRITER_HACK)
+	printf("%9llu %-10s %s\n", pEntry->nTimestamp, pEntry->strSeverity, pEntry->strMessage);
+#else
 	LogData& logData = LogData::GetInstance();
 	xnl::AutoCSLocker locker(logData.hLock);
 	for (XnLogWritersList::ConstIterator it = logData.writers.Begin(); it != logData.writers.End(); ++it)
@@ -200,10 +203,16 @@ static void xnLogWriteEntry(XnLogEntry* pEntry)
 		const XnLogWriter* pWriter = *it;
 		pWriter->WriteEntry(pEntry, pWriter->pCookie);
 	}
+#endif
 }
 
 static void xnLogWriteImplV(const XnChar* csLogMask, XnLogSeverity nSeverity, const XnChar* csFile, XnUInt32 nLine, const XnChar* csFormat, va_list args)
 {
+#if defined(XN_ENABLE_LOG_WRITER_HACK)
+	XnBufferedLogEntry entry;
+	xnLogCreateEntryV(&entry, csLogMask, nSeverity, csFile, nLine, csFormat, args);
+	xnLogWriteEntry(&entry);
+#else
 	// check if there are any writers registered
 	LogData& logData = LogData::GetInstance();
 
@@ -219,6 +228,7 @@ static void xnLogWriteImplV(const XnChar* csLogMask, XnLogSeverity nSeverity, co
 
 	// write it down
 	xnLogWriteEntry(&entry);
+#endif
 }
 
 static void xnLogWriteImpl(const XnChar* csLogMask, XnLogSeverity nSeverity, const XnChar* csFile, XnUInt32 nLine, const XnChar* csFormat, ...)

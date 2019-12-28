@@ -54,7 +54,7 @@ OniStatus XnOniDriver::initialize(oni::driver::DeviceConnectedCallback deviceCon
 		return (nRetVal);
 	}
 
-	xnLogSetMaskMinSeverity(XN_LOG_MASK_ALL, XN_LOG_VERBOSE);
+	//xnLogSetMaskMinSeverity(XN_LOG_MASK_ALL, XN_LOG_VERBOSE);
 	m_writer.Register();
 
 	XnStatus rc = XnDeviceEnumeration::ConnectedEvent().Register(OnDeviceConnected, this, m_connectedEventHandle);
